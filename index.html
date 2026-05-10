@@ -700,6 +700,17 @@ function toggleShuffle() {
   }
 }
 
+function autoNextCard() {
+  if (shuffleMode) {
+    const pos = shuffleOrder.indexOf(currentIndex);
+    const next = shuffleOrder[(pos + 1) % shuffleOrder.length];
+    selectCard(next);
+  } else {
+    selectCard((currentIndex + 1) % CARDS.length);
+  }
+  playCurrentCard();
+}
+
 function nextCard() {
   if (shuffleMode) {
     const pos = shuffleOrder.indexOf(currentIndex);
@@ -831,7 +842,7 @@ async function playCurrentCard() {
       setStatus('→ Carte suivante...');
       await wait(400);
       if (playSession !== mySession) return;
-      nextCard();
+      autoNextCard();
     }
 
   } catch (err) {
