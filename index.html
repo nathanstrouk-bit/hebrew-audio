@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>עברית — Générateur Audio Hébreu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+–bg: #0e0e0f;
+–surface: #161618;
+–border: #2a2a2e;
+–accent: #c8a96e;
+–accent2: #7eb8c8;
+–text: #e8e4dc;
+–muted: #6b6860;
+–success: #6ec89a;
+–error: #c86e6e;
+}
+
+- { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+min-height: 100vh;
+padding: 0 0 80px;
+}
+
+header {
+padding: 40px 24px 32px;
+border-bottom: 1px solid var(–border);
+background: linear-gradient(180deg, #13111a 0%, var(–bg) 100%);
+}
+
+.hebrew-title {
+font-family: ‘DM Serif Display’, serif;
+font-size: clamp(36px, 8vw, 64px);
+color: var(–accent);
+letter-spacing: -1px;
+line-height: 1;
+direction: rtl;
+}
+
+.subtitle {
+font-size: 11px;
+color: var(–muted);
+letter-spacing: 3px;
+text-transform: uppercase;
+margin-top: 8px;
+}
+
+.badge {
+display: inline-block;
+background: #1e1c26;
+border: 1px solid #3a3550;
+color: var(–accent2);
+font-size: 10px;
+letter-spacing: 2px;
+text-transform: uppercase;
+padding: 4px 10px;
+border-radius: 2px;
+margin-top: 12px;
+}
+
+.container {
+max-width: 680px;
+margin: 0 auto;
+padding: 32px 24px;
+}
+
+.api-section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 24px;
+margin-bottom: 28px;
+}
+
+.section-label {
+font-size: 10px;
+letter-spacing: 3px;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 16px;
+}
+
+.key-row {
+display: flex;
+gap: 10px;
+align-items: center;
+}
+
+input[type=“password”], input[type=“text”] {
+flex: 1;
+background: var(–bg);
+border: 1px solid var(–border);
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 13px;
+padding: 12px 14px;
+border-radius: 3px;
+outline: none;
+transition: border-color 0.2s;
+}
+
+input:focus { border-color: var(–accent); }
+
+.toggle-btn {
+background: none;
+border: 1px solid var(–border);
+color: var(–muted);
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+padding: 12px 14px;
+border-radius: 3px;
+cursor: pointer;
+white-space: nowrap;
+transition: all 0.2s;
+}
+.toggle-btn:hover { border-color: var(–accent); color: var(–accent); }
+
+.hint {
+font-size: 11px;
+color: var(–muted);
+margin-top: 10px;
+line-height: 1.6;
+}
+.hint a { color: var(–accent2); text-decoration: none; }
+
+.privacy-note {
+display: flex;
+gap: 10px;
+align-items: flex-start;
+background: #0f1a14;
+border: 1px solid #1e3028;
+border-radius: 3px;
+padding: 12px 14px;
+margin-top: 14px;
+}
+.privacy-note .icon { color: var(–success); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.privacy-note span { font-size: 11px; color: #7aab8a; line-height: 1.5; }
+
+.controls-section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 24px;
+margin-bottom: 28px;
+}
+
+.control-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 16px;
+margin-bottom: 16px;
+}
+
+.control-group label {
+display: block;
+font-size: 10px;
+letter-spacing: 2px;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 8px;
+}
+
+select {
+width: 100%;
+background: var(–bg);
+border: 1px solid var(–border);
+color: var(–text);
+font-family: ‘DM Mono’, monospace;
+font-size: 12px;
+padding: 10px 12px;
+border-radius: 3px;
+outline: none;
+cursor: pointer;
+}
+
+.range-row {
+display: flex;
+gap: 10px;
+align-items: center;
+}
+.range-row input[type=“number”] {
+width: 70px;
+padding: 8px 10px;
+font-size: 12px;
+flex: none;
+}
+.range-sep { color: var(–muted); font-size: 12px; }
+
+.generate-btn {
+width: 100%;
+background: var(–accent);
+color: #0a0800;
+border: none;
+font-family: ‘DM Mono’, monospace;
+font-size: 13px;
+font-weight: 500;
+letter-spacing: 2px;
+text-transform: uppercase;
+padding: 18px;
+border-radius: 3px;
+cursor: pointer;
+transition: all 0.2s;
+margin-top: 8px;
+}
+.generate-btn:hover { background: #dbbe82; }
+.generate-btn:disabled { background: #3a3020; color: #6a5a30; cursor: not-allowed; }
+
+.progress-section {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 24px;
+margin-bottom: 28px;
+display: none;
+}
+
+.progress-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 14px;
+}
+
+.progress-label { font-size: 11px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; }
+.progress-count { font-size: 13px; color: var(–accent); }
+
+.progress-bar-bg {
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 2px;
+height: 4px;
+overflow: hidden;
+}
+
+.progress-bar-fill {
+height: 100%;
+background: linear-gradient(90deg, var(–accent), var(–accent2));
+width: 0%;
+transition: width 0.3s ease;
+border-radius: 2px;
+}
+
+.current-card {
+margin-top: 16px;
+font-size: 12px;
+color: var(–muted);
+}
+.current-card .hebrew-word { color: var(–accent); font-size: 16px; direction: rtl; display: inline-block; }
+.current-card .arrow { color: var(–border); margin: 0 8px; }
+.current-card .french-word { color: var(–text); }
+
+.downloads-section {
+display: none;
+}
+
+.downloads-title {
+font-size: 10px;
+letter-spacing: 3px;
+text-transform: uppercase;
+color: var(–muted);
+margin-bottom: 16px;
+}
+
+.download-item {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 16px 20px;
+margin-bottom: 10px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+transition: border-color 0.2s;
+}
+.download-item:hover { border-color: var(–accent); }
+
+.download-info { flex: 1; }
+.download-name { font-size: 13px; color: var(–text); margin-bottom: 4px; }
+.download-meta { font-size: 11px; color: var(–muted); }
+
+.download-btn {
+background: none;
+border: 1px solid var(–accent);
+color: var(–accent);
+font-family: ‘DM Mono’, monospace;
+font-size: 11px;
+letter-spacing: 1px;
+padding: 8px 16px;
+border-radius: 3px;
+cursor: pointer;
+transition: all 0.2s;
+text-decoration: none;
+white-space: nowrap;
+}
+.download-btn:hover { background: var(–accent); color: #0a0800; }
+.download-btn.generating { border-color: var(–border); color: var(–muted); cursor: default; }
+
+.status-dot {
+width: 8px;
+height: 8px;
+border-radius: 50%;
+display: inline-block;
+margin-right: 8px;
+background: var(–border);
+}
+.status-dot.done { background: var(–success); }
+.status-dot.active { background: var(–accent); animation: pulse 1s infinite; }
+.status-dot.error { background: var(–error); }
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.3; }
+}
+
+.error-box {
+background: #1a0f0f;
+border: 1px solid #3a1f1f;
+color: var(–error);
+font-size: 12px;
+padding: 14px 16px;
+border-radius: 3px;
+margin-top: 14px;
+display: none;
+line-height: 1.6;
+}
+
+.stats-row {
+display: flex;
+gap: 24px;
+margin-top: 20px;
+padding-top: 20px;
+border-top: 1px solid var(–border);
+}
+.stat { text-align: center; }
+.stat-num { font-family: ‘DM Serif Display’, serif; font-size: 28px; color: var(–accent); }
+.stat-label { font-size: 10px; color: var(–muted); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+</style>
+
+</head>
+<body>
+
+<header>
+  <div class="hebrew-title">עברית</div>
+  <div class="subtitle">Générateur Audio — Voix Native Israélienne</div>
+  <div class="badge">312 cartes · Google TTS · MP3</div>
+</header>
+
+<div class="container">
+
+  <!-- API Key -->
+
+  <div class="api-section">
+    <div class="section-label">Clé API Google Cloud TTS</div>
+    <div class="key-row">
+      <input type="password" id="apiKey" placeholder="AIza...">
+      <button class="toggle-btn" onclick="toggleKey()">Voir</button>
+    </div>
+    <div class="hint">
+      Console Google Cloud → APIs &amp; Services → Credentials → Créer une clé API<br>
+      Restreins-la à <strong>Cloud Text-to-Speech API</strong> uniquement.
+    </div>
+    <div class="privacy-note">
+      <span class="icon">✓</span>
+      <span>Ta clé reste uniquement dans ton navigateur. Elle n'est envoyée qu'à l'API Google TTS directement depuis ton téléphone — jamais à Claude ni à aucun autre serveur.</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+
+  <div class="controls-section">
+    <div class="section-label">Paramètres</div>
+    <div class="control-row">
+      <div class="control-group">
+        <label>Voix hébraïque</label>
+        <select id="hebrewVoice">
+          <option value="he-IL-Wavenet-A">he-IL-Wavenet-A (Femme)</option>
+          <option value="he-IL-Wavenet-B">he-IL-Wavenet-B (Homme)</option>
+          <option value="he-IL-Wavenet-C">he-IL-Wavenet-C (Femme)</option>
+          <option value="he-IL-Wavenet-D">he-IL-Wavenet-D (Homme)</option>
+          <option value="he-IL-Standard-A">he-IL-Standard-A (Femme)</option>
+          <option value="he-IL-Standard-B">he-IL-Standard-B (Homme)</option>
+          <option value="he-IL-Standard-C">he-IL-Standard-C (Femme)</option>
+          <option value="he-IL-Standard-D">he-IL-Standard-D (Homme)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Voix française</label>
+        <select id="frenchVoice">
+          <option value="fr-FR-Wavenet-A">fr-FR-Wavenet-A (Femme)</option>
+          <option value="fr-FR-Wavenet-B">fr-FR-Wavenet-B (Homme)</option>
+          <option value="fr-FR-Wavenet-C">fr-FR-Wavenet-C (Femme)</option>
+          <option value="fr-FR-Wavenet-D">fr-FR-Wavenet-D (Homme)</option>
+        </select>
+      </div>
+    </div>
+
+```
+<div class="control-group" style="margin-bottom:16px;">
+  <label>Cartes à générer (sur 312)</label>
+  <div class="range-row">
+    <span style="font-size:11px;color:var(--muted);">De</span>
+    <input type="number" id="startCard" value="1" min="1" max="312">
+    <span class="range-sep">→</span>
+    <input type="number" id="endCard" value="40" min="1" max="312">
+    <span style="font-size:11px;color:var(--muted);">sur 312</span>
+  </div>
+</div>
+
+<button class="generate-btn" id="generateBtn" onclick="startGeneration()">
+  ▶ Générer les audios
+</button>
+<div class="error-box" id="errorBox"></div>
+```
+
+  </div>
+
+  <!-- Progress -->
+
+  <div class="progress-section" id="progressSection">
+    <div class="progress-header">
+      <span class="progress-label">Génération en cours</span>
+      <span class="progress-count" id="progressCount">0 / 0</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="current-card" id="currentCard"></div>
+  </div>
+
+  <!-- Downloads -->
+
+  <div class="downloads-section" id="downloadsSection">
+    <div class="downloads-title">Fichiers générés</div>
+    <div id="downloadsList"></div>
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num" id="statCards">0</div>
+        <div class="stat-label">Cartes</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statFiles">0</div>
+        <div class="stat-label">Fichiers MP3</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statMb">0</div>
+        <div class="stat-label">Mo générés</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CARDS = [{"hebrew":"פרויקט","french":"Projet","phonetic":"pro-YEKT"},{"hebrew":"אצל","french":"Chez","phonetic":"E-tsel"},{"hebrew":"לקוחות","french":"Clients","phonetic":"la-ko-KHOT"},{"hebrew":"הזה","french":"Ce/cet (m)","phonetic":"ha-ZE"},{"hebrew":"לתקן","french":"Réparer","phonetic":"le-ta-KEN"},{"hebrew":"צוות","french":"Équipe","phonetic":"Tse-vet"},{"hebrew":"פגישות","french":"Réunions","phonetic":"pgi-SHOT"},{"hebrew":"בטח","french":"Bien sûr","phonetic":"ba-TAKH"},{"hebrew":"כל הכבוד","french":"Bravo","phonetic":"kol ha-ka-VOD"},{"hebrew":"תשע","french":"9 feminin","phonetic":"TE-sha"},{"hebrew":"בעיה","french":"Problème","phonetic":"ba-a-YA"},{"hebrew":"לשקול","french":"Peser","phonetic":"lish-KOL"},{"hebrew":"ממש","french":"Vraiment","phonetic":"Ma-mash"},{"hebrew":"מחפש","french":"Je cherche (m)","phonetic":"me-kha-PES"},{"hebrew":"מבשלת","french":"Elle cuisine (f)","phonetic":"me-va-SHE-let"},{"hebrew":"עבודה","french":"Travail / boulot","phonetic":"avo-DA"},{"hebrew":"גמרתי","french":"J'ai terminé","phonetic":"Ga-mar-ti"},{"hebrew":"פגישה","french":"Réunion","phonetic":"pgi-SHA"},{"hebrew":"להיות","french":"Être (infinitif)","phonetic":"li-HYOT"},{"hebrew":"לעזור","french":"Aider","phonetic":"la-a-ZOR"},{"hebrew":"דוחות פיננסיים","french":"Rapports financiers","phonetic":"du-KHOT fi-nan-SI-yim"},{"hebrew":"לשמוע","french":"Entendre","phonetic":"lish-MO-a"},{"hebrew":"הייתה","french":"c'était (f)","phonetic":"hay-TA"},{"hebrew":"הרבה","french":"Beaucoup","phonetic":"har-Be"},{"hebrew":"מעולה","french":"Excellent","phonetic":"me-u-LE"},{"hebrew":"כואב לי","french":"J'ai mal","phonetic":"Ko-Ev Li"},{"hebrew":"מרגיש","french":"Je me sens (m)","phonetic":"mar-GISH"},{"hebrew":"במה","french":"En quoi","phonetic":"Be-Ma"},{"hebrew":"בעוד","french":"Dans (futur)","phonetic":"be-OD"},{"hebrew":"מקבלת","french":"Je reçois (f)","phonetic":"me-ka-BE-let"},{"hebrew":"לשתות","french":"Boire","phonetic":"Lish-tot"},{"hebrew":"טריים","french":"Frais (pluriel)","phonetic":"tri-YIM"},{"hebrew":"לטעום","french":"Goûter","phonetic":"lit-OM"},{"hebrew":"יופי","french":"Super / parfait","phonetic":"YO-fi"},{"hebrew":"חיים","french":"Vie","phonetic":"kha-YIM"},{"hebrew":"לוקחת","french":"Je prends (f)","phonetic":"lo-KE-khet"},{"hebrew":"שף","french":"Chef","phonetic":"Shef"},{"hebrew":"צריך","french":"Je dois (m)","phonetic":"tsa-RIKH"},{"hebrew":"תספורת","french":"Coupe de cheveux","phonetic":"tis-PO-ret"},{"hebrew":"לדבר","french":"Parler","phonetic":"le-da-ber"},{"hebrew":"טעים","french":"Délicieux (m)","phonetic":"Ta-Im"},{"hebrew":"מיוחדת","french":"Spécial (f)","phonetic":"mi-yu-KHE-det"},{"hebrew":"קצר","french":"Court (m)","phonetic":"Ka-tsar"},{"hebrew":"מאתיים","french":"200","phonetic":"Ma-Ta-yim"},{"hebrew":"הבא","french":"Prochain (m)","phonetic":"Ha-ba"},{"hebrew":"בערך","french":"Environ","phonetic":"be-E-rekh"},{"hebrew":"אכלתי","french":"J'ai mangé","phonetic":"a-KHAL-ti"},{"hebrew":"לוקחים","french":"Ils prennent","phonetic":"lokh-KIM"},{"hebrew":"מוכן","french":"Prêt (m)","phonetic":"Mu-khan"},{"hebrew":"דומה","french":"Similaire","phonetic":"do-ME"},{"hebrew":"דירה","french":"Appartement","phonetic":"Di-ra"},{"hebrew":"לנוח","french":"Se reposer","phonetic":"la-Nu-akh"},{"hebrew":"קניתי","french":"J'ai acheté","phonetic":"Ka-ni-Ti"},{"hebrew":"להבין","french":"Comprendre","phonetic":"le-ha-VIN"},{"hebrew":"כי","french":"Parce que","phonetic":"Ki"},{"hebrew":"גבינה","french":"Fromage","phonetic":"gvi-NA"},{"hebrew":"משהו","french":"Quelque chose","phonetic":"ma-SHE-hu"},{"hebrew":"נחמד","french":"Sympa (m)","phonetic":"nakh-MAD"},{"hebrew":"אז","french":"Alors / donc","phonetic":"AZ"},{"hebrew":"מרכז","french":"Centre ville","phonetic":"Mer-kaz"},{"hebrew":"הכי","french":"Le / la plus","phonetic":"Ha-Khi"},{"hebrew":"עדיין","french":"Encore / toujours","phonetic":"a-DA-yin"},{"hebrew":"שמחנו","french":"Nous avons été contents","phonetic":"Sa-makh-nu"},{"hebrew":"שני","french":"Deux (m, devant nom)","phonetic":"Shney"},{"hebrew":"מאה","french":"100","phonetic":"me-A"},{"hebrew":"רוצה","french":"Je veux (m)","phonetic":"ro-TSE"},{"hebrew":"שווקים","french":"Marchés","phonetic":"shva-kim"},{"hebrew":"לבדוק","french":"Vérifier","phonetic":"Liv-dok"},{"hebrew":"יכולה","french":"Je peux (f)","phonetic":"ye-kho-LA"},{"hebrew":"אתמול","french":"Hier","phonetic":"et-MOL"},{"hebrew":"מקבל","french":"Je reçois (m)","phonetic":"me-ka-BEL"},{"hebrew":"עשתה","french":"Elle a fait","phonetic":"as-TA"},{"hebrew":"חדשה","french":"Nouvelle (f)","phonetic":"Kha-da-sha"},{"hebrew":"שתי","french":"Deux (f, devant nom)","phonetic":"Shtey"},{"hebrew":"ראיתי","french":"J'ai vu","phonetic":"ra-I-ti"},{"hebrew":"נראים","french":"Avoir l'air (pl)","phonetic":"nir-IM"},{"hebrew":"בר מזל","french":"Chanceux","phonetic":"Bar Ma-Zal"},{"hebrew":"לבוא","french":"Venir","phonetic":"La-vo"},{"hebrew":"תמיד","french":"Toujours","phonetic":"Ta-MID"},{"hebrew":"קונה","french":"J'achète (m)","phonetic":"Ko-ne"},{"hebrew":"רופא","french":"Médecin","phonetic":"Ro-fe"},{"hebrew":"חדרים","french":"Chambres / pièces","phonetic":"Kha-da-rim"},{"hebrew":"אוהבת","french":"J'aime (f)","phonetic":"o-HE-vet"},{"hebrew":"נראה","french":"Avoir l'air (s)","phonetic":"ni-RE"},{"hebrew":"בצוות","french":"En équipe","phonetic":"Be-tse-vet"},{"hebrew":"שם","french":"Là-bas","phonetic":"sham"},{"hebrew":"ליד","french":"À côté de","phonetic":"le-YAD"},{"hebrew":"התחלתי","french":"J'ai commencé","phonetic":"hit-KHAL-ti"},{"hebrew":"רק","french":"Seulement","phonetic":"Rak"},{"hebrew":"שווה","french":"Ça vaut le coup","phonetic":"sha-VE"},{"hebrew":"רגע","french":"Un moment","phonetic":"Re-Ga"},{"hebrew":"לאהוב","french":"Aimer","phonetic":"le-a-HOV"},{"hebrew":"קפה","french":"Café","phonetic":"KA-fe"},{"hebrew":"מאות","french":"Centaines","phonetic":"Me-Ot"},{"hebrew":"מקשיב","french":"J'écoute (m)","phonetic":"mak-SHIV"},{"hebrew":"קודם","french":"Avant / auparavant","phonetic":"KO-dem"},{"hebrew":"סך הכל","french":"Au total","phonetic":"sakh ha-KOL"},{"hebrew":"דוח","french":"Rapport","phonetic":"DUKH"},{"hebrew":"פעם הבאה","french":"La prochaine fois","phonetic":"pa-AM ha-ba-A"},{"hebrew":"אחר","french":"Autre","phonetic":"a-KHER"},{"hebrew":"תרגיש טוב","french":"Bon rétablissement","phonetic":"tar-GISH tov"},{"hebrew":"חודשים","french":"Mois","phonetic":"kho-da-SHIM"},{"hebrew":"קצרה","french":"Courte","phonetic":"Ktsa-ra"},{"hebrew":"מכיר","french":"Je connais (m)","phonetic":"ma-KIR"},{"hebrew":"הלכתי","french":"Je suis allé","phonetic":"ha-LAKH-ti"},{"hebrew":"להתראות","french":"Au revoir","phonetic":"le-hit-ra-OT"},{"hebrew":"אלף","french":"1000","phonetic":"E-lef"},{"hebrew":"מקצועי","french":"Professionnel","phonetic":"mik-tso-I"},{"hebrew":"מרגישה","french":"Je me sens (f)","phonetic":"mar-gi-sha"},{"hebrew":"מנסה","french":"J'essaie","phonetic":"Me-na-se"},{"hebrew":"עשרים","french":"Vingt","phonetic":"es-RIM"},{"hebrew":"ראש","french":"Tête","phonetic":"Rosh"},{"hebrew":"מבינה","french":"Comprendre (f)","phonetic":"me-vi-NA"},{"hebrew":"אנשים","french":"Gens / personnes","phonetic":"a-na-SHIM"},{"hebrew":"שאלה","french":"Question","phonetic":"sha-a-LA"},{"hebrew":"מלא","french":"Complet","phonetic":"Ma-Le"},{"hebrew":"בזכותך","french":"Grâce à toi","phonetic":"biz-KHU-tekha"},{"hebrew":"עמיתים","french":"Collègues","phonetic":"a-mi-tim"},{"hebrew":"צריכים","french":"Nous avons besoin","phonetic":"tsri-KHIM"},{"hebrew":"עדכון","french":"Mise à jour","phonetic":"id-KUN"},{"hebrew":"אשראי","french":"Crédit","phonetic":"ash-RAI"},{"hebrew":"אוטובוס","french":"Bus","phonetic":"o-to-BUS"},{"hebrew":"איפה","french":"Où","phonetic":"EY-fo"},{"hebrew":"גם","french":"Aussi","phonetic":"Gam"},{"hebrew":"עשה","french":"Il a fait","phonetic":"a-SA"},{"hebrew":"יודע","french":"Savoir (m)","phonetic":"yo-DEA"},{"hebrew":"בחרתי","french":"J'ai choisi","phonetic":"ba-KHAR-ti"},{"hebrew":"בוא שוב","french":"Reviens !","phonetic":"Bo-shuv"},{"hebrew":"אליכם","french":"À vous","phonetic":"e-ley-KHEM"},{"hebrew":"רואה חשבון","french":"Comptable","phonetic":"ro-É khesh-BON"},{"hebrew":"נחמדה","french":"Sympa (f)","phonetic":"nakh-MA-da"},{"hebrew":"לטעום","french":"Goûter","phonetic":"Lit-om"},{"hebrew":"מחיר","french":"Prix","phonetic":"ma-KHIR"},{"hebrew":"עבודה טובה","french":"Bon travail","phonetic":"avo-DA to-VA"},{"hebrew":"צריכה","french":"Je dois (f)","phonetic":"tsri-KHA"},{"hebrew":"מטבח","french":"Cuisine","phonetic":"mit-Bakh"},{"hebrew":"כמעט","french":"Presque","phonetic":"Kim-At"},{"hebrew":"מכירה","french":"Je connais (f)","phonetic":"Ma-Ki-Ra"},{"hebrew":"מהבית","french":"Depuis la maison","phonetic":"me-ha-BA-yit"},{"hebrew":"דרכון","french":"Passeport","phonetic":"dar-KON"},{"hebrew":"זמן","french":"Temps","phonetic":"Zman"},{"hebrew":"יפה","french":"Beau / belle","phonetic":"ya-FE"},{"hebrew":"מחפשת","french":"Je cherche (f)","phonetic":"me-kha-PE-set"},{"hebrew":"משפחה","french":"Famille","phonetic":"mish-pa-KHA"},{"hebrew":"לעשות ספורט","french":"Faire du sport","phonetic":"la-a-SOT sport"},{"hebrew":"מקשיבה","french":"J'écoute (f)","phonetic":"Mak-shi-va"},{"hebrew":"עמל","french":"Travailler dur","phonetic":"A-mel"},{"hebrew":"עבדתי","french":"J'ai travaillé","phonetic":"avad-TI"},{"hebrew":"מכנסיים","french":"Pantalon","phonetic":"mikh-na-SA-yim"},{"hebrew":"מתחילה","french":"Je commence (f)","phonetic":"Mat-khi-la"},{"hebrew":"משרד","french":"Bureau","phonetic":"Mish-rad"},{"hebrew":"לראות","french":"Voir","phonetic":"Lir-ot"},{"hebrew":"בכיף","french":"Avec plaisir / de rien","phonetic":"be-KEYF"},{"hebrew":"מזה","french":"Depuis","phonetic":"Mi-Ze"},{"hebrew":"שיעור","french":"Cours / leçon","phonetic":"shi-UR"},{"hebrew":"למחר","french":"À demain","phonetic":"le-ma-KHAR"},{"hebrew":"איתו","french":"Avec lui","phonetic":"I-to"},{"hebrew":"הלכת","french":"Tu es allé(e)","phonetic":"ha-LAKH-t"},{"hebrew":"מבין","french":"Comprendre (m)","phonetic":"me-VIN"},{"hebrew":"איתי","french":"Avec moi","phonetic":"I-Ti"},{"hebrew":"דירות","french":"Appartements","phonetic":"Di-rot"},{"hebrew":"בוחר","french":"Je choisis (m)","phonetic":"bo-KHER"},{"hebrew":"בבית","french":"Chez soi","phonetic":"Ba-Ba-Yit"},{"hebrew":"בישלתי","french":"J'ai cuisiné","phonetic":"bi-SHAL-ti"},{"hebrew":"כל","french":"Tout / toute","phonetic":"KOL"},{"hebrew":"לפני","french":"Avant","phonetic":"Li-fney"},{"hebrew":"דחוף","french":"Urgent","phonetic":"Da-Khuf"},{"hebrew":"חברה","french":"Amie","phonetic":"khav-RA"},{"hebrew":"מאז","french":"Depuis (moment précis)","phonetic":"Me-Az"},{"hebrew":"שוב","french":"Encore / à nouveau","phonetic":"SHUV"},{"hebrew":"יכול","french":"Je peux (m)","phonetic":"Ya-khol"},{"hebrew":"לקשוב","french":"Écouter","phonetic":"lik-SHOV"},{"hebrew":"מבשל","french":"Je cuisine (m)","phonetic":"me-va-SHEL"},{"hebrew":"לומד","french":"J'apprends (m)","phonetic":"lo-MED"},{"hebrew":"מבקר פיננסי","french":"Auditeur financier","phonetic":"me-va-KER fi-nan-SI"},{"hebrew":"ערב","french":"Soirée / soir","phonetic":"E-rev"},{"hebrew":"עכשיו","french":"Maintenant","phonetic":"akh-SHAV"},{"hebrew":"בר מזל","french":"Chanceux","phonetic":"Bar-Mazal"},{"hebrew":"חבילה","french":"Colis","phonetic":"Kha-vi-la"},{"hebrew":"חדר","french":"Chambre / pièce","phonetic":"Kha-der"},{"hebrew":"תודה על","french":"Merci pour tout","phonetic":"toda al"},{"hebrew":"הזאת","french":"Ce / cette (f)","phonetic":"ha-ZOT"},{"hebrew":"מים","french":"Eau","phonetic":"Ma-yim"},{"hebrew":"תמיד","french":"Toujours","phonetic":"Tamid"},{"hebrew":"שקט","french":"Calme (m)","phonetic":"sha-KET"},{"hebrew":"אליך","french":"À toi (m)","phonetic":"e-LE-kha"},{"hebrew":"קינוח","french":"Dessert","phonetic":"ki-NO-akh"},{"hebrew":"שיער","french":"Cheveux","phonetic":"se-Ar"},{"hebrew":"מתגעגעת","french":"Tu me manques (f)","phonetic":"mit-ga-GE-et"},{"hebrew":"חברה","french":"Entreprise / société","phonetic":"khev-RA"},{"hebrew":"קיבלנו","french":"Nous avons reçu","phonetic":"kibal-NU"},{"hebrew":"פרטים","french":"Détails / informations","phonetic":"pra-TIM"},{"hebrew":"עייף","french":"Fatigué (m)","phonetic":"A-yef"},{"hebrew":"זה הכל","french":"C'est tout","phonetic":"Ze ha-kol"},{"hebrew":"מכון כושר","french":"Salle de sport","phonetic":"ma-KHON KO-sher"},{"hebrew":"רחוב","french":"Rue","phonetic":"re-KHOV"},{"hebrew":"מיץ תפוזים","french":"Jus d'orange","phonetic":"mits ta-pu-ZIM"},{"hebrew":"מוכנה","french":"Prête (f)","phonetic":"mu-KHA-na"},{"hebrew":"לשלוח","french":"Envoyer","phonetic":"lish-LO-akh"},{"hebrew":"חשוב","french":"Important (m)","phonetic":"kha-shuv"},{"hebrew":"רחוק","french":"Loin","phonetic":"ra-KHOK"},{"hebrew":"יודעת","french":"Savoir (f)","phonetic":"yo-DAAT"},{"hebrew":"מקווה","french":"J'espère","phonetic":"me-ka-VE"},{"hebrew":"משלם","french":"Je paie (m)","phonetic":"me-sha-LEM"},{"hebrew":"בסיסי","french":"Basique","phonetic":"Ba-si-si"},{"hebrew":"שלושים","french":"30","phonetic":"shlo-SHIM"},{"hebrew":"שכונה","french":"Quartier","phonetic":"shkhu-NA"},{"hebrew":"שלם","french":"Paye (impératif)","phonetic":"Shalem"},{"hebrew":"שבועיים","french":"Deux semaines","phonetic":"shvu-A-yim"},{"hebrew":"נהדרת","french":"Formidable (f)","phonetic":"Neh-de-ret"},{"hebrew":"לקחתי","french":"J'ai pris","phonetic":"La-kakh-ti"},{"hebrew":"מאה","french":"100","phonetic":"Me-A"},{"hebrew":"הגעתי","french":"Je suis arrivé","phonetic":"hi-GA-ti"},{"hebrew":"אין בעיה","french":"Pas de problème","phonetic":"ein ba-a-YA"},{"hebrew":"שפה","french":"Langue","phonetic":"Sa-fa"},{"hebrew":"לבד","french":"Seul","phonetic":"Le-vad"},{"hebrew":"שעה","french":"Heure","phonetic":"Sha-a"},{"hebrew":"חזרה","french":"Retour","phonetic":"khaz-RA"},{"hebrew":"ספורט","french":"Sport","phonetic":"Sport"},{"hebrew":"יותר","french":"Plus","phonetic":"YO-ter"},{"hebrew":"גמור","french":"C'est fait / terminé","phonetic":"ga-Mur"},{"hebrew":"מתי","french":"Quand","phonetic":"Ma-tay"},{"hebrew":"שקטה","french":"Calme (f)","phonetic":"Shke-Ta"},{"hebrew":"טרי","french":"Frais (m)","phonetic":"Ta-ri"},{"hebrew":"שני","french":"Deux (devant un nom)","phonetic":"shney"},{"hebrew":"מאמן","french":"Coach / entraîneur","phonetic":"me-a-MEN"},{"hebrew":"צריכה","french":"Je dois (f)","phonetic":"tsri-KHA"},{"hebrew":"יכול","french":"Je peux (m)","phonetic":"Ya-khol"},{"hebrew":"לוקח","french":"Je prends (m)","phonetic":"Lo-Kakh"},{"hebrew":"באמת","french":"Vraiment","phonetic":"Be-e-met"},{"hebrew":"תחום","french":"Domaine","phonetic":"TKHUM"},{"hebrew":"הבנתי","french":"J'ai compris","phonetic":"he-VAN-ti"},{"hebrew":"עיר","french":"Ville","phonetic":"ir"},{"hebrew":"ספרים","french":"Livres","phonetic":"Sfa-rim"},{"hebrew":"קומה","french":"Étage","phonetic":"KO-ma"},{"hebrew":"מהר","french":"Vite","phonetic":"Ma-Her"},{"hebrew":"מתגעגעים","french":"Vous me manquez","phonetic":"mit-ga-GU-im"},{"hebrew":"חשבונות","french":"Comptes","phonetic":"khesh-bo-NOT"},{"hebrew":"מסעדה","french":"Restaurant","phonetic":"mis-a-DA"},{"hebrew":"טופס","french":"Formulaire","phonetic":"To-Fes"},{"hebrew":"קילו","french":"Kilo","phonetic":"KI-Lo"},{"hebrew":"מעניין","french":"Intéressant","phonetic":"me-a-NYEN"},{"hebrew":"מחר","french":"Demain","phonetic":"Ma-khar"},{"hebrew":"אימון","french":"Séance d'entraînement","phonetic":"i-MUN"},{"hebrew":"מתקשר","french":"J'appelle (téléphone) (m)","phonetic":"mit-ka-SHER"},{"hebrew":"קיבלתי","french":"J'ai reçu","phonetic":"ki-BAL-ti"},{"hebrew":"מיוחד","french":"Spécial (m)","phonetic":"mi-yu-KHED"},{"hebrew":"רוצה","french":"Je veux (f)","phonetic":"Ro-Tsa"},{"hebrew":"אוהב","french":"J'aime (m)","phonetic":"o-HEV"},{"hebrew":"עוף","french":"Poulet","phonetic":"Of"},{"hebrew":"שמחה","french":"Contente (f)","phonetic":"Sme-kha"},{"hebrew":"אוכל","french":"Nourriture","phonetic":"O-khel"},{"hebrew":"כבר","french":"Déjà / depuis","phonetic":"KVAR"},{"hebrew":"שבע","french":"7 féminin","phonetic":"SHE-va"},{"hebrew":"מחשב","french":"Ordinateur","phonetic":"makh-SHEV"},{"hebrew":"אפשר","french":"On peut","phonetic":"ef-SHAR"},{"hebrew":"קרוב","french":"Proche","phonetic":"ka-ROV"},{"hebrew":"איתכם","french":"Avec vous","phonetic":"i-ta-KHEM"},{"hebrew":"מבשל","french":"Il cuisine (m)","phonetic":"Me-va-shel"},{"hebrew":"קופה","french":"Caisse","phonetic":"Ku-pa"},{"hebrew":"חנות","french":"Magasin","phonetic":"kha-NUT"},{"hebrew":"עמוד","french":"Page","phonetic":"a-MUD"},{"hebrew":"בוחרת","french":"Je choisis (f)","phonetic":"Bo-khe-ret"},{"hebrew":"ארבע","french":"4 féminin","phonetic":"AR-ba"},{"hebrew":"פעם הבאה","french":"La prochaine fois","phonetic":"pa-AM ha-ba-A"},{"hebrew":"קשה","french":"Dur / difficile","phonetic":"Ka-She"},{"hebrew":"בירה","french":"Bière","phonetic":"Bi-Ra"},{"hebrew":"מקשיבה","french":"J'écoute (f)","phonetic":"mak-shi-VA"},{"hebrew":"אחר כך","french":"Ensuite / puis","phonetic":"a-KHAR KAKH"},{"hebrew":"חשבון בנק","french":"Compte bancaire","phonetic":"khesh-BON bank"},{"hebrew":"להתאמן","french":"S'entraîner","phonetic":"le-hit-a-MEN"},{"hebrew":"נהדר","french":"Formidable (m)","phonetic":"neh-dar"},{"hebrew":"תוקן","french":"A été réparé","phonetic":"tu-KAN"},{"hebrew":"גאים","french":"Fiers","phonetic":"Ge-Im"},{"hebrew":"איתך","french":"Avec toi","phonetic":"i-Tekh"},{"hebrew":"מתגעגע","french":"Tu me manques (m)","phonetic":"mit-ga-GE-a"},{"hebrew":"צריך","french":"Je dois (m)","phonetic":"Tsa-rikh"},{"hebrew":"לקוח","french":"Client","phonetic":"la-KO-akh"},{"hebrew":"פעמיים","french":"Deux fois","phonetic":"pa-a-MA-yim"},{"hebrew":"היה","french":"C'était","phonetic":"ha-YA"},{"hebrew":"אלפים","french":"2000","phonetic":"A-lafim"},{"hebrew":"עייפה","french":"Fatiguée (f)","phonetic":"A-ye-fa"},{"hebrew":"מחכים","french":"Nous attendons","phonetic":"Me-kha-khil"},{"hebrew":"חשובה","french":"Importante (f)","phonetic":"Kha-shuva"},{"hebrew":"המליץ","french":"Il a recommandé","phonetic":"him-LIZ"},{"hebrew":"לפתוח","french":"Ouvrir","phonetic":"lif-TO-akh"},{"hebrew":"עוגה","french":"Gâteau","phonetic":"U-Ga"}];
+
+let generatedFiles = [];
+let totalBytes = 0;
+
+function toggleKey() {
+  const input = document.getElementById('apiKey');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+async function callGoogleTTS(text, languageCode, voiceName, apiKey) {
+  const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      input: { text },
+      voice: { languageCode, name: voiceName },
+      audioConfig: { audioEncoding: 'MP3', speakingRate: 0.85 }
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || 'Erreur API Google TTS');
+  }
+  const data = await response.json();
+  return data.audioContent; // base64 MP3
+}
+
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+
+function silence(durationMs) {
+  const sampleRate = 22050;
+  const numSamples = Math.floor(sampleRate * durationMs / 1000);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
+  const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+  return buffer;
+}
+
+async function decodeMP3(base64, audioCtx) {
+  const buf = base64ToArrayBuffer(base64);
+  return await audioCtx.decodeAudioData(buf);
+}
+
+async function startGeneration() {
+  hideError();
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showError('Entre ta clé API Google Cloud TTS.'); return; }
+
+  const start = parseInt(document.getElementById('startCard').value) - 1;
+  const end = parseInt(document.getElementById('endCard').value);
+  if (start < 0 || end > 312 || start >= end) { showError('Plage de cartes invalide.'); return; }
+
+  const hebrewVoice = document.getElementById('hebrewVoice').value;
+  const frenchVoice = document.getElementById('frenchVoice').value;
+  const hebrewLang = 'he-IL';
+  const frenchLang = 'fr-FR';
+
+  const cards = CARDS.slice(start, end);
+  const total = cards.length;
+
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('downloadsSection').style.display = 'block';
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 22050 });
+  const audioBuffers = [];
+
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const cardNum = start + i + 1;
+
+    document.getElementById('progressCount').textContent = `${i + 1} / ${total}`;
+    document.getElementById('progressBar').style.width = `${((i + 1) / total) * 100}%`;
+    document.getElementById('currentCard').innerHTML =
+      `<span class="hebrew-word">${card.hebrew}</span><span class="arrow">→</span><span class="french-word">${card.french}</span>`;
+
+    try {
+      // 1. Mot hébreu
+      const hebrewB64 = await callGoogleTTS(card.hebrew, hebrewLang, hebrewVoice, apiKey);
+      const hebrewABuf = await decodeMP3(hebrewB64, audioCtx);
+      audioBuffers.push(hebrewABuf);
+
+      // 2. Silence 1.5s
+      const sil1 = await audioCtx.decodeAudioData(silence(1500));
+      audioBuffers.push(sil1);
+
+      // 3. Traduction française
+      const frenchB64 = await callGoogleTTS(card.french, frenchLang, frenchVoice, apiKey);
+      const frenchABuf = await decodeMP3(frenchB64, audioCtx);
+      audioBuffers.push(frenchABuf);
+
+      // 4. Silence 1s
+      const sil2 = await audioCtx.decodeAudioData(silence(1000));
+      audioBuffers.push(sil2);
+
+      // 5. Répétition hébreu
+      audioBuffers.push(hebrewABuf);
+
+      // 6. Silence 2.5s avant prochaine carte
+      const sil3 = await audioCtx.decodeAudioData(silence(2500));
+      audioBuffers.push(sil3);
+
+    } catch (err) {
+      showError(`Erreur carte ${cardNum} (${card.hebrew}) : ${err.message}`);
+      document.getElementById('generateBtn').disabled = false;
+      return;
+    }
+  }
+
+  // Assembler tous les buffers en un seul WAV
+  const totalLength = audioBuffers.reduce((s, b) => s + b.length, 0);
+  const combined = audioCtx.createBuffer(1, totalLength, 22050);
+  const data = combined.getChannelData(0);
+  let offset = 0;
+  for (const buf of audioBuffers) {
+    data.set(buf.getChannelData(0), offset);
+    offset += buf.length;
+  }
+
+  // Encoder en WAV
+  const wavBuffer = encodeWAV(combined);
+  const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+  totalBytes += blob.size;
+
+  const filename = `hebreu_cartes_${start + 1}-${end}.wav`;
+  const url = URL.createObjectURL(blob);
+
+  generatedFiles.push({ filename, url, cards: cards.length, size: blob.size });
+  renderDownloads();
+
+  document.getElementById('generateBtn').disabled = false;
+  document.getElementById('currentCard').innerHTML = `<span style="color:var(--success)">✓ Terminé — ${cards.length} cartes générées</span>`;
+}
+
+function encodeWAV(audioBuffer) {
+  const numChannels = 1;
+  const sampleRate = audioBuffer.sampleRate;
+  const samples = audioBuffer.getChannelData(0);
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+  const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * 2, true);
+  view.setUint16(32, numChannels * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+
+function renderDownloads() {
+  const list = document.getElementById('downloadsList');
+  list.innerHTML = '';
+  for (const file of generatedFiles) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    const div = document.createElement('div');
+    div.className = 'download-item';
+    div.innerHTML = `
+      <div class="download-info">
+        <div class="download-name"><span class="status-dot done"></span>${file.filename}</div>
+        <div class="download-meta">${file.cards} cartes · ${mb} Mo</div>
+      </div>
+      <a href="${file.url}" download="${file.filename}" class="download-btn">⬇ Télécharger</a>
+    `;
+    list.appendChild(div);
+  }
+  document.getElementById('statCards').textContent = generatedFiles.reduce((s, f) => s + f.cards, 0);
+  document.getElementById('statFiles').textContent = generatedFiles.length;
+  document.getElementById('statMb').textContent = (totalBytes / 1024 / 1024).toFixed(1);
+}
+</script>
+
+</body>
+</html>
