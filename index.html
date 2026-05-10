@@ -264,7 +264,7 @@ async function fetchTTS(text, lang, voice) {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       input:{text}, voice:{languageCode:lang, name:voice},
-      audioConfig:{audioEncoding:'MP3', speakingRate:0.85}
+      audioConfig:{audioEncoding:'MP3', speakingRate:1.0}
     })
   });
   if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || 'TTS Error'); }
@@ -303,8 +303,8 @@ async function playCard(cardIdx) {
   let hUrl, fUrl;
   try {
     [hUrl, fUrl] = await Promise.all([
-      fetchTTS(card.hebrew, 'he-IL', 'he-IL-Wavenet-A'),
-      fetchTTS(card.french, 'fr-FR', 'fr-FR-Wavenet-A')
+      fetchTTS(card.hebrew, 'he-IL', 'he-IL-Wavenet-D'),
+      fetchTTS(card.french, 'fr-FR', 'fr-FR-Wavenet-B')
     ]);
   } catch(e) {
     setStatus('Erreur: ' + e.message, false, true);
@@ -317,11 +317,11 @@ async function playCard(cardIdx) {
   setStatus(`▶ ${card.hebrew} · ${card.french}`, true);
 
   await playUrl(hUrl);  if (stopFlag) return;
-  await waitMs(1400);   if (stopFlag) return;
+  await waitMs(1100);   if (stopFlag) return;
   await playUrl(fUrl);  if (stopFlag) return;
-  await waitMs(1000);   if (stopFlag) return;
+  await waitMs(800);    if (stopFlag) return;
   await playUrl(hUrl);  if (stopFlag) return;
-  await waitMs(700);
+  await waitMs(500);
 }
 
 // ---- MAIN LOOP ----
