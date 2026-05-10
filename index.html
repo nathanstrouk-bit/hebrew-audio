@@ -619,6 +619,14 @@ function toggleSetupKey() {
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
+// Auto-load saved key
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('hebrewPlayerApiKey');
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+  }
+});
+
 function startApp() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (!key || key.length < 10) {
@@ -627,6 +635,7 @@ function startApp() {
     return;
   }
   API_KEY = key;
+  localStorage.setItem('hebrewPlayerApiKey', key);
   document.getElementById('setupScreen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   buildPlaylist();
@@ -755,48 +764,78 @@ async function fetchAudio(text, lang, voice) {
   return new Blob([bytes], { type: 'audio/mp3' });
 }
 
+let playSession = 0; // track current play session to cancel stale ones
+
 async function playCurrentCard() {
   if (isLoading) return;
+
+  // Cancel any previous session
+  playSession++;
+  const mySession = playSession;
 
   const card = CARDS[currentIndex];
 
   // Stop current audio
   if (currentAudio) {
     currentAudio.pause();
+    currentAudio.src = '';
     currentAudio = null;
   }
 
   setLoading(true, 20);
   setStatus(`Chargement de "${card.hebrew}"...`);
   isPlaying = true;
+  document.getElementById('playBtn').textContent = '⏸';
+
+  // Media Session API for lock screen
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: card.hebrew,
+      artist: card.french,
+      album: 'עברית · Hebrew Player',
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => prevCard());
+    navigator.mediaSession.setActionHandler('nexttrack', () => nextCard());
+    navigator.mediaSession.setActionHandler('pause', () => stopPlayback());
+    navigator.mediaSession.setActionHandler('play', () => playCurrentCard());
+  }
 
   try {
-    // Fetch Hebrew audio
     setLoading(true, 40);
     const hebrewBlob = await fetchAudio(card.hebrew, 'he-IL', 'he-IL-Wavenet-A');
+    if (playSession !== mySession) return;
 
     setLoading(true, 70);
     const frenchBlob = await fetchAudio(card.french, 'fr-FR', 'fr-FR-Wavenet-A');
+    if (playSession !== mySession) return;
 
     setLoading(false);
     setStatus(`▶ ${card.hebrew} · ${card.french}`, 'success');
 
-    // Play sequence: Hebrew → pause → French → pause → Hebrew
-    await playBlob(hebrewBlob);
+    // Play sequence strictly one after another
+    await playBlob(hebrewBlob, mySession);
+    if (playSession !== mySession) return;
     await wait(1500);
-    await playBlob(frenchBlob);
+    if (playSession !== mySession) return;
+    await playBlob(frenchBlob, mySession);
+    if (playSession !== mySession) return;
     await wait(1000);
-    await playBlob(hebrewBlob);
+    if (playSession !== mySession) return;
+    await playBlob(hebrewBlob, mySession);
+    if (playSession !== mySession) return;
     await wait(800);
+    if (playSession !== mySession) return;
 
     // Auto-next
     if (isPlaying) {
       setStatus('→ Carte suivante...');
-      await wait(500);
+      await wait(400);
+      if (playSession !== mySession) return;
       nextCard();
     }
 
   } catch (err) {
+    if (playSession !== mySession) return;
     setLoading(false);
     setStatus('Erreur : ' + err.message, 'error');
     isPlaying = false;
@@ -804,7 +843,20 @@ async function playCurrentCard() {
   }
 }
 
-function playBlob(blob) {
+function stopPlayback() {
+  playSession++;
+  isPlaying = false;
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+  setLoading(false);
+  document.getElementById('playBtn').textContent = '▶';
+  setStatus('En pause');
+}
+
+function playBlob(blob, session) {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
