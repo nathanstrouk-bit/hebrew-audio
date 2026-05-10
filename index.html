@@ -92,9 +92,8 @@ padding:32px 24px; z-index:1000;
 </head>
 <body>
 
-<!-- Hidden audio element — single persistent player -->
-
 <audio id="player" playsinline></audio>
+<audio id="bgMusic" playsinline loop src="https://cdn.pixabay.com/audio/2022/10/16/audio_a794a57e15.mp3"></audio>
 
 <div id="setupScreen">
   <div class="setup-logo">עברית</div>
@@ -116,7 +115,7 @@ padding:32px 24px; z-index:1000;
 <div id="app">
   <div class="topbar">
     <div class="topbar-logo">עברית</div>
-    <button class="shuffle-btn" id="shuffleBtn" onclick="toggleShuffle()">⇄ Aléatoire</button>
+    <div style="display:flex;gap:8px;align-items:center"><button class="shuffle-btn" id="shuffleBtn" onclick="toggleShuffle()">⇄ Aléatoire</button><button class="shuffle-btn" id="musicBtn" onclick="toggleMusic()" style="font-size:16px;padding:6px 10px">🎵</button><input type="range" id="volSlider" min="0" max="100" value="20" oninput="setVol(this.value)" style="width:60px;accent-color:var(--accent);display:none" id="volSlider"></div>
   </div>
 
   <div class="artwork-wrap">
@@ -424,6 +423,34 @@ function buildList(filter='') {
 }
 
 function filterList(v) { buildList(v); }
+
+// ---- BACKGROUND MUSIC ----
+const bgMusic = document.getElementById("bgMusic");
+let musicOn = false;
+bgMusic.volume = 0.15;
+
+function toggleMusic() {
+  musicOn = !musicOn;
+  const btn = document.getElementById("musicBtn");
+  const slider = document.getElementById("volSlider");
+  if (musicOn) {
+    bgMusic.play().catch(() => {});
+    btn.style.borderColor = "var(--accent)";
+    btn.style.color = "var(--accent)";
+    btn.style.background = "#0d2018";
+    slider.style.display = "block";
+  } else {
+    bgMusic.pause();
+    btn.style.borderColor = "";
+    btn.style.color = "";
+    btn.style.background = "";
+    slider.style.display = "none";
+  }
+}
+
+function setVol(val) {
+  bgMusic.volume = val / 100;
+}
 </script>
 
 </body>
